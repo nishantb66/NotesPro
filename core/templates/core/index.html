@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Notes App</title>
+  <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
+  <script defer src="{% static 'js/app.js' %}"></script>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-slate-800">
+  <div class="min-h-screen flex flex-col justify-center items-center py-12 px-4">
+
+    <!-- LOGIN / SIGNUP CARD -->
+    <div id="login-section"
+         class="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 space-y-6">
+      <h1 class="text-3xl font-extrabold text-center">Notes Pro</h1>
+      <p class="text-center text-slate-500">Securely store and manage your thoughts.</p>
+      <div class="space-y-4">
+        <input id="username" type="text"
+               placeholder="Username"
+               class="w-full border border-slate-300 focus:ring-2 focus:ring-slate-400 focus:border-transparent rounded-lg px-4 py-2 transition" />
+        <button id="login-btn"
+                class="w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition">
+          Login / Sign Up
+        </button>
+      </div>
+    </div>
+
+    <!-- NOTES INTERFACE -->
+    <div id="notes-section" class="hidden w-full max-w-4xl mt-12 space-y-8">
+
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <h2 class="text-2xl md:text-3xl font-bold">Your Notes</h2>
+        <button id="logout-btn"
+                class="mt-4 md:mt-0 bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg transition">
+          Logout
+        </button>
+      </div>
+
+      <!-- Notes Grid -->
+      <div id="notes-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- JS injects note cards here -->
+      </div>
+
+      <!-- Add Note Card -->
+      <div class="bg-white shadow-lg rounded-2xl p-6">
+        <h3 class="text-lg font-semibold mb-3">New Note</h3>
+        <textarea id="new-note-content"
+                  rows="4"
+                  class="w-full border border-slate-300 focus:ring-2 focus:ring-slate-400 focus:border-transparent rounded-lg p-3 transition resize-none"
+                  placeholder="Write your note here..."></textarea>
+        <div class="mt-4 text-right">
+          <button id="add-note-btn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition">
+            Add Note
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
