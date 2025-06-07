@@ -39,15 +39,35 @@ class TagManager {
                 body: JSON.stringify({ name, color })
             });
             if (response.ok) {
-                const newTag = await response.json();
-                this.tags.push(newTag);
-                this.renderTagSelector();
-                return newTag;
+                await this.loadTags();
+                return true;
             }
         } catch (error) {
             console.error('Error creating tag:', error);
         }
-        return null;
+        return false;
+    }
+
+    async deleteTag(tagId) {
+        try {
+            const response = await fetch(`/api/tags/${tagId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access')}`
+                }
+            });
+            if (response.ok) {
+                await this.loadTags();
+                // If the deleted tag was active, clear filter
+                if (this.activeTagSearch && this.tags.findIndex(t => t.id === tagId) === -1) {
+                    this.activeTagSearch = null;
+                }
+                this.renderTagSelector();
+                if (window.noteManager) window.noteManager.loadNotes();
+            }
+        } catch (error) {
+            console.error('Error deleting tag:', error);
+        }
     }
 
     renderTagSelector() {
@@ -55,16 +75,19 @@ class TagManager {
         if (!tagSelector) return;
 
         tagSelector.innerHTML = `
-            <div class="flex flex-wrap gap-2 mb-4">
+            <div class="flex flex-wrap gap-2 mb-4 justify-center">
                 ${this.tags.map(tag => `
-                    <button 
-                        class="tag-btn px-3 py-1 rounded-full text-sm font-medium transition-colors
-                            ${this.activeTagSearch === tag.name ? 'bg-blue-100 text-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}"
-                        data-tag-name="${tag.name}"
-                        style="border: 1px solid ${tag.color}20; color: ${tag.color}"
-                    >
-                        ${tag.name}
-                    </button>
+                    <span class="relative group">
+                        <button 
+                            class="tag-btn px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-1
+                                ${this.activeTagSearch === tag.name ? 'bg-blue-100 text-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}"
+                            data-tag-name="${tag.name}"
+                            style="border: 1px solid ${tag.color}20; color: ${tag.color}"
+                        >
+                            ${tag.name}
+                        </button>
+                        <button class="absolute -top-1 -right-1 bg-white border border-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-xs text-gray-400 hover:text-red-500 hover:border-red-400 transition-opacity opacity-80 group-hover:opacity-100" style="z-index:2;" data-tag-id="${tag.id}" title="Delete tag">&times;</button>
+                    </span>
                 `).join('')}
                 <button 
                     id="add-tag-btn"
@@ -83,24 +106,23 @@ class TagManager {
         tagSelector.addEventListener('click', async (e) => {
             if (e.target.classList.contains('tag-btn')) {
                 const tagName = e.target.dataset.tagName;
-                
                 // Toggle tag search
                 if (this.activeTagSearch === tagName) {
                     this.activeTagSearch = null;
                 } else {
                     this.activeTagSearch = tagName;
                 }
-                
                 this.renderTagSelector();
-                
-                // Trigger note refresh with tag search
-                if (window.noteManager) {
-                    window.noteManager.loadNotes();
-                }
+                if (window.noteManager) window.noteManager.loadNotes();
             } else if (e.target.id === 'add-tag-btn') {
                 const name = prompt('Enter tag name:');
                 if (name) {
                     await this.createTag(name);
+                }
+            } else if (e.target.dataset.tagId) {
+                // Delete tag
+                if (confirm('Delete this tag?')) {
+                    await this.deleteTag(Number(e.target.dataset.tagId));
                 }
             }
         });
@@ -114,4 +136,9 @@ class TagManager {
 // Initialize tag manager when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.tagManager = new TagManager();
-}); 
+});
+
+// Helper to reload tags after login
+window.reloadTags = async () => {
+    if (window.tagManager) await window.tagManager.loadTags();
+}; 

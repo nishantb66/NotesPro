@@ -37,22 +37,6 @@ document.getElementById('logout-btn').onclick = () => {
   location.reload();
 };
 
-// ADD a note
-document.getElementById('add-note-btn').onclick = async () => {
-  const content = document.getElementById('new-note-content').value.trim();
-  if (!content) return;
-  await fetch(API + '/notes/', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer ' + token
-    },
-    body: JSON.stringify({content})
-  });
-  document.getElementById('new-note-content').value = '';
-  loadNotes();
-};
-
 // LOAD & RENDER notes
 async function loadNotes(){
   const res = await fetch(API + '/notes/', {
@@ -137,6 +121,7 @@ class NoteManager {
                 localStorage.setItem('access', data.access);
                 localStorage.setItem('refresh', data.refresh);
                 this.showNotesInterface();
+                if (window.reloadTags) await window.reloadTags();
                 await this.loadNotes();
             }
         } catch (error) {
@@ -260,9 +245,14 @@ class NoteManager {
             return;
         }
 
-        notesList.innerHTML = this.notes.map(note => `
-            <div class="bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl p-6 hover:shadow-xl transition border-l-4 border-blue-500">
-                <div class="flex flex-wrap gap-2 mb-3">
+        notesList.innerHTML = this.notes.map(note => {
+            // Extract the first line as a title if available
+            const lines = note.content.split('\n');
+            const title = lines[0].trim();
+            const body = lines.slice(1).join('\n').trim();
+            return `
+            <div class="bg-white/95 backdrop-blur-lg shadow-xl rounded-2xl p-7 hover:shadow-2xl transition border-l-4 border-blue-500 flex flex-col gap-3 mx-auto max-w-lg w-full">
+                <div class="flex flex-wrap gap-2 mb-2 justify-center">
                     ${note.tags.map(tag => `
                         <span class="px-2 py-1 rounded-full text-xs font-medium" 
                               style="background-color: ${tag.color}20; color: ${tag.color}">
@@ -270,21 +260,24 @@ class NoteManager {
                         </span>
                     `).join('')}
                 </div>
-                <h3 class="font-semibold text-lg mb-3">${note.content.split('\n')[0]}</h3>
-                <p class="text-slate-600 mb-4">${note.content}</p>
-                <div class="flex justify-between items-center">
-                    <span class="text-xs text-slate-500">${new Date(note.created_at).toLocaleString()}</span>
+                <div class="flex flex-col gap-1 items-center w-full">
+                    <h3 class="font-bold text-xl text-center text-slate-800">${title || 'Untitled Note'}</h3>
+                    ${body ? `<p class="text-slate-600 text-center whitespace-pre-line">${body}</p>` : ''}
+                </div>
+                <div class="flex justify-between items-center w-full mt-2 pt-2 border-t border-slate-100">
+                    <span class="text-xs text-slate-400">${new Date(note.created_at).toLocaleString()}</span>
                     <div class="flex space-x-2">
-                        <button class="p-1.5 rounded-lg hover:bg-slate-100" onclick="noteManager.handleEditNote(${note.id}, prompt('Edit note:', '${note.content.replace(/'/g, "\\'")}'))">
-                            <i class="fas fa-edit text-slate-600 text-sm"></i>
+                        <button class="p-2 rounded-lg hover:bg-blue-50 transition" title="Edit" onclick="noteManager.handleEditNote(${note.id}, prompt('Edit note:', '${note.content.replace(/'/g, "\\'")}'))">
+                            <i class="fas fa-edit text-blue-600 text-base"></i>
                         </button>
-                        <button class="p-1.5 rounded-lg hover:bg-slate-100" onclick="noteManager.handleDeleteNote(${note.id})">
-                            <i class="fas fa-trash text-slate-600 text-sm"></i>
+                        <button class="p-2 rounded-lg hover:bg-red-50 transition" title="Delete" onclick="noteManager.handleDeleteNote(${note.id})">
+                            <i class="fas fa-trash text-red-500 text-base"></i>
                         </button>
                     </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     showLoginInterface() {
