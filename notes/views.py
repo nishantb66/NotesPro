@@ -5,9 +5,10 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Q
 
-from .models import Note
-from .serializers import UserSerializer, NoteSerializer
+from .models import Note, Tag
+from .serializers import UserSerializer, NoteSerializer, TagSerializer
 
 User = get_user_model()
 
@@ -46,20 +47,51 @@ def login_view(request):
         'refresh': str(refresh),
     })
 
-class NoteListCreateView(ListCreateAPIView):
-    serializer_class    = NoteSerializer
-    permission_classes  = [IsAuthenticated]
+class TagListCreateView(ListCreateAPIView):
+    serializer_class = TagSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Note.objects.filter(user=self.request.user).order_by('-created_at')
+        return Tag.objects.all()
+
+class TagDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = TagSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        return Tag.objects.all()
+
+class NoteListCreateView(ListCreateAPIView):
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Note.objects.filter(user=self.request.user)
+        
+        # Get search parameters
+        tag_search = self.request.query_params.get('tag_search', '')
+        search = self.request.query_params.get('search', '')
+        
+        if tag_search:
+            # Fuzzy search for tags
+            queryset = queryset.filter(
+                Q(tags__name__icontains=tag_search) |
+                Q(content__icontains=tag_search)
+            ).distinct()
+        
+        if search:
+            queryset = queryset.filter(content__icontains=search)
+            
+        return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 class NoteDetailView(RetrieveUpdateDestroyAPIView):
-    serializer_class   = NoteSerializer
+    serializer_class = NoteSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field       = 'pk'
+    lookup_field = 'pk'
 
     def get_queryset(self):
         return Note.objects.filter(user=self.request.user)

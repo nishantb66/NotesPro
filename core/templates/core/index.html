@@ -10,6 +10,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <script defer src="{% static 'js/tags.js' %}"></script>
     <script defer src="{% static 'js/app.js' %}"></script>
   </head>
   <body
@@ -93,33 +94,18 @@
           </button>
         </div>
 
+        <!-- Tag Selector -->
+        <div id="tag-selector" class="bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl p-5">
+          <h3 class="text-lg font-semibold mb-4">Filter by Tags</h3>
+          <!-- Tags will be injected here by JavaScript -->
+        </div>
+
         <!-- Notes Grid -->
         <div
           id="notes-list"
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          <!-- JS injects note cards here -->
-
-          <!-- Example note card (will be replaced by JS) -->
-          <div
-            class="bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl p-6 hover:shadow-xl transition border-l-4 border-blue-500"
-          >
-            <h3 class="font-semibold text-lg mb-3">Sample Note</h3>
-            <p class="text-slate-600 mb-4">
-              This is a sample note to demonstrate the enhanced UI.
-            </p>
-            <div class="flex justify-between items-center">
-              <span class="text-xs text-slate-500">Just now</span>
-              <div class="flex space-x-2">
-                <button class="p-1.5 rounded-lg hover:bg-slate-100">
-                  <i class="fas fa-edit text-slate-600 text-sm"></i>
-                </button>
-                <button class="p-1.5 rounded-lg hover:bg-slate-100">
-                  <i class="fas fa-trash text-slate-600 text-sm"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+          <!-- Notes will be injected here by JavaScript -->
         </div>
 
         <!-- Add Note Card -->
