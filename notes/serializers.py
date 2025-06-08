@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Note, Tag
+from .models import Note, Tag, NoteShare
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,3 +40,13 @@ class NoteSerializer(serializers.ModelSerializer):
         if tag_ids is not None:
             instance.tags.set(tag_ids)
         return instance
+
+class NoteShareSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+    receiver = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    note = NoteSerializer(read_only=True)
+    note_id = serializers.PrimaryKeyRelatedField(queryset=Note.objects.all(), write_only=True, source='note', required=False)
+
+    class Meta:
+        model = NoteShare
+        fields = ['id', 'sender', 'receiver', 'note', 'note_id', 'created_at']

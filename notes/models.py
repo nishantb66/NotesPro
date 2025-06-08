@@ -22,3 +22,12 @@ class Note(models.Model):
 
     def __str__(self):
         return f"Note {self.id} by {self.user.username}"
+
+class NoteShare(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_shares')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_shares')
+    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='shared_instances')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender.username} shared note {self.note.id} with {self.receiver.username}"

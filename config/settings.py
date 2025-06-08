@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'theme',        #           "
     'core',         # serves index.html
     'notes',        # our new notes/jwt API
+    'profiles.apps.ProfilesConfig',
 ]
 
 TAILWIND_APP_NAME = 'theme'              # if using django-tailwind

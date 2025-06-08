@@ -6,4 +6,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),       # serves index.html
     path('api/', include('notes.urls')),  # our auth + notes API
+    path('api/profile/', include('profiles.urls')),
 ]
