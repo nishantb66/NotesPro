@@ -23,7 +23,7 @@ class NoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ['id', 'content', 'created_at', 'updated_at', 'tags', 'tag_ids']
+        fields = ['id', 'content', 'created_at', 'updated_at', 'tags', 'tag_ids', 'is_favorite']
 
     def create(self, validated_data):
         tag_ids = validated_data.pop('tag_ids', [])

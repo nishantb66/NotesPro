@@ -10,7 +10,7 @@ function hideNotes(){ document.getElementById('notes-section').classList.add('hi
 
 // on load
 if (token) {
-  hideLogin(); showNotes(); loadNotes();
+  hideLogin(); showNotes();
 } else {
   showLogin(); hideNotes();
 }
@@ -28,7 +28,7 @@ document.getElementById('login-btn').onclick = async () => {
   if (!res.ok) return alert(data.detail || 'Error');
   token = data.access;
   localStorage.setItem('access', token);
-  hideLogin(); showNotes(); loadNotes();
+  hideLogin(); showNotes();
 };
 
 // LOGOUT
@@ -37,55 +37,11 @@ document.getElementById('logout-btn').onclick = () => {
   location.reload();
 };
 
-// LOAD & RENDER notes
-async function loadNotes(){
-  const res = await fetch(API + '/notes/', {
-    headers: {'Authorization':'Bearer ' + token}
-  });
-  const notes = await res.json();
-  const list = document.getElementById('notes-list');
-  list.innerHTML = '';
-
-  notes.forEach(n => {
-    const container = document.createElement('div');
-    container.className = 'bg-white p-4 rounded shadow flex items-start';
-
-    const textarea = document.createElement('textarea');
-    textarea.className = 'border p-2 flex-grow';
-    textarea.rows = 2;
-    textarea.value = n.content;
-    textarea.onchange = async () => {
-      await fetch(API + `/notes/${n.id}/`, {
-        method:'PUT',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization':'Bearer ' + token
-        },
-        body: JSON.stringify({content: textarea.value})
-      });
-      loadNotes();
-    };
-
-    const delBtn = document.createElement('button');
-    delBtn.textContent = 'Delete';
-    delBtn.className = 'ml-3 bg-red-500 text-white px-3 py-1 rounded';
-    delBtn.onclick = async () => {
-      await fetch(API + `/notes/${n.id}/`, {
-        method:'DELETE',
-        headers:{'Authorization':'Bearer '+ token}
-      });
-      loadNotes();
-    };
-
-    container.append(textarea, delBtn);
-    list.appendChild(container);
-  });
-}
-
 // Note management functionality
 class NoteManager {
     constructor() {
         this.notes = [];
+        this.favoritesView = false;
         this.init();
     }
 
@@ -99,10 +55,25 @@ class NoteManager {
         const logoutBtn = document.getElementById('logout-btn');
         const addNoteBtn = document.getElementById('add-note-btn');
         const newNoteContent = document.getElementById('new-note-content');
+        const searchBar = document.getElementById('note-search-bar');
+        const showFavBtn = document.getElementById('show-fav-btn');
+        const showAllBtn = document.getElementById('show-all-btn');
 
         loginBtn?.addEventListener('click', () => this.handleLogin());
         logoutBtn?.addEventListener('click', () => this.handleLogout());
         addNoteBtn?.addEventListener('click', () => this.handleAddNote());
+
+        // Debounced search
+        let searchTimeout = null;
+        searchBar?.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.loadNotes();
+            }, 250);
+        });
+
+        if (showFavBtn) showFavBtn.addEventListener('click', () => this.loadNotes(true));
+        if (showAllBtn) showAllBtn.addEventListener('click', () => this.loadNotes(false));
     }
 
     async handleLogin() {
@@ -135,7 +106,8 @@ class NoteManager {
         this.showLoginInterface();
     }
 
-    async loadNotes() {
+    async loadNotes(favoritesOnly = false) {
+        this.favoritesView = favoritesOnly;
         try {
             let url = '/api/notes/';
             const params = new URLSearchParams();
@@ -144,6 +116,17 @@ class NoteManager {
             const tagSearch = window.tagManager?.getTagSearch();
             if (tagSearch) {
                 params.append('tag_search', tagSearch);
+            }
+
+            // Add search param from search bar
+            const searchBar = document.getElementById('note-search-bar');
+            const searchValue = searchBar ? searchBar.value.trim() : '';
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            if (favoritesOnly) {
+                params.append('favorite', 'true');
             }
 
             // Add the params to the URL if any exist
@@ -164,6 +147,10 @@ class NoteManager {
         } catch (error) {
             console.error('Error loading notes:', error);
         }
+
+        // Show/hide the Show All Notes button
+        const showAllBtn = document.getElementById('show-all-btn');
+        if (showAllBtn) showAllBtn.classList.toggle('hidden', !favoritesOnly);
     }
 
     async handleAddNote() {
@@ -225,6 +212,24 @@ class NoteManager {
         }
     }
 
+    async toggleFavorite(noteId, isFav) {
+        try {
+            const response = await fetch(`/api/notes/${noteId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ is_favorite: !isFav })
+            });
+            if (response.ok) {
+                await this.loadNotes(this.favoritesView);
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+        }
+    }
+
     renderNotes() {
         const notesList = document.getElementById('notes-list');
         if (!notesList) return;
@@ -251,27 +256,27 @@ class NoteManager {
             const title = lines[0].trim();
             const body = lines.slice(1).join('\n').trim();
             return `
-            <div class="bg-white/95 backdrop-blur-lg shadow-xl rounded-2xl p-7 hover:shadow-2xl transition border-l-4 border-blue-500 flex flex-col gap-3 mx-auto max-w-lg w-full">
+            <div class="note-card">
                 <div class="flex flex-wrap gap-2 mb-2 justify-center">
                     ${note.tags.map(tag => `
-                        <span class="px-2 py-1 rounded-full text-xs font-medium" 
-                              style="background-color: ${tag.color}20; color: ${tag.color}">
-                            ${tag.name}
-                        </span>
+                        <span class="note-tag" style="color: ${tag.color}">${tag.name}</span>
                     `).join('')}
                 </div>
                 <div class="flex flex-col gap-1 items-center w-full">
-                    <h3 class="font-bold text-xl text-center text-slate-800">${title || 'Untitled Note'}</h3>
-                    ${body ? `<p class="text-slate-600 text-center whitespace-pre-line">${body}</p>` : ''}
+                    <h3 class="note-title">${title || 'Untitled Note'}</h3>
+                    ${body ? `<p class="note-body">${body}</p>` : ''}
                 </div>
-                <div class="flex justify-between items-center w-full mt-2 pt-2 border-t border-slate-100">
+                <div class="flex justify-between items-center w-full mt-2 pt-2 note-meta">
                     <span class="text-xs text-slate-400">${new Date(note.created_at).toLocaleString()}</span>
-                    <div class="flex space-x-2">
-                        <button class="p-2 rounded-lg hover:bg-blue-50 transition" title="Edit" onclick="noteManager.handleEditNote(${note.id}, prompt('Edit note:', '${note.content.replace(/'/g, "\\'")}'))">
-                            <i class="fas fa-edit text-blue-600 text-base"></i>
+                    <div class="flex space-x-2 note-actions">
+                        <button class="note-action-btn" title="${note.is_favorite ? 'Unfavorite' : 'Favorite'}" onclick="noteManager.toggleFavorite(${note.id}, ${note.is_favorite})">
+                            <i class="fa${note.is_favorite ? 's' : 'r'} fa-star" style="color:${note.is_favorite ? '#facc15' : '#cbd5e1'}"></i>
                         </button>
-                        <button class="p-2 rounded-lg hover:bg-red-50 transition" title="Delete" onclick="noteManager.handleDeleteNote(${note.id})">
-                            <i class="fas fa-trash text-red-500 text-base"></i>
+                        <button class="note-action-btn edit" title="Edit" onclick="noteManager.handleEditNote(${note.id}, prompt('Edit note:', '${note.content.replace(/'/g, "\\'")}'))">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="note-action-btn delete" title="Delete" onclick="noteManager.handleDeleteNote(${note.id})">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>

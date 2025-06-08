@@ -4,25 +4,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Notes App</title>
+    <title>Notes Pro - Professional Note Management</title>
     <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="{% static 'js/tags.js' %}"></script>
     <script defer src="{% static 'js/app.js' %}"></script>
     <style>
-      body {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+      * {
+        box-sizing: border-box;
       }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+        color: #334155;
+      }
+
+      /* Enhanced container with better spacing */
       .container-centered {
-        max-width: 900px;
+        max-width: 1200px;
         margin: 0 auto;
         padding: 2rem 1rem;
         display: flex;
@@ -30,128 +40,485 @@
         align-items: center;
         gap: 2rem;
       }
+
+      /* Professional grid layout */
       .notes-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 2rem;
-        justify-items: center;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
         width: 100%;
+        max-width: 1100px;
       }
+      
+      @media (min-width: 768px) {
+        .notes-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      
+      @media (min-width: 1200px) {
+        .notes-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      /* Enhanced tag bar */
       .tag-bar {
         width: 100%;
+        max-width: 1100px;
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 1rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(203, 213, 225, 0.5);
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Professional note cards */
+      .note-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 20px;
+        padding: 2rem;
+        border-left: 4px solid #3b82f6;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+
+      .note-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .note-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+        border-color: #3b82f6;
+      }
+
+      .note-card:hover::before {
+        opacity: 1;
+      }
+
+      /* Typography enhancements */
+      .note-title {
+        font-size: 1.375rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        line-height: 1.4;
+        letter-spacing: -0.025em;
+      }
+
+      .note-body {
+        color: #64748b;
+        font-size: 1rem;
+        line-height: 1.7;
+        white-space: pre-line;
+        font-weight: 400;
+        margin: 0;
+      }
+
+      /* Enhanced metadata section */
+      .note-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #94a3b8;
+        border-top: 1px solid rgba(226, 232, 240, 0.6);
+        padding-top: 1rem;
+        margin-top: auto;
+      }
+
+      /* Professional action buttons */
+      .note-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .note-action-btn {
+        background: none;
+        border: none;
+        padding: 0.625rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .note-action-btn.edit:hover {
+        background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+        color: #3730a3;
+        transform: scale(1.05);
+      }
+
+      .note-action-btn.delete:hover {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        color: #b91c1c;
+        transform: scale(1.05);
+      }
+
+      /* Enhanced tags */
+      .note-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .note-tag {
+        padding: 0.375rem 0.875rem;
+        border-radius: 20px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        color: #475569;
+        border: 1px solid rgba(203, 213, 225, 0.6);
+        transition: all 0.2s ease;
+      }
+
+      .note-tag:hover {
+        background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+        color: #3730a3;
+        transform: translateY(-1px);
+      }
+
+      /* Professional search bar */
+      .search-bar {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto 1rem auto;
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .search-bar:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .search-bar input {
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 1rem;
+        width: 100%;
+        padding: 0.5rem 0;
+        color: #334155;
+        font-weight: 400;
+      }
+
+      .search-bar input::placeholder {
+        color: #94a3b8;
+      }
+
+      .search-bar i {
+        color: #3b82f6;
+        font-size: 1.125rem;
+        margin-right: 1rem;
+      }
+
+      /* Enhanced add note section */
+      .add-note-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        max-width: 800px;
+        width: 100%;
+        margin-top: 2rem;
+      }
+
+      .add-note-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .add-note-title i {
+        color: #3b82f6;
+        font-size: 1.125rem;
+        background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+        padding: 0.5rem;
+        border-radius: 10px;
+      }
+
+      .add-note-textarea {
+        width: 100%;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 12px;
+        padding: 1.25rem;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        resize: vertical;
+        min-height: 120px;
+        background: rgba(248, 250, 252, 0.8);
+        transition: all 0.3s ease;
+        font-family: inherit;
+        line-height: 1.6;
+      }
+
+      .add-note-textarea:focus {
+        border-color: #3b82f6;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        outline: none;
+      }
+
+      .add-note-textarea::placeholder {
+        color: #94a3b8;
+      }
+
+      .add-note-btn {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+        border-radius: 12px;
+        padding: 0.875rem 2rem;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .add-note-btn:hover {
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .add-note-btn:active {
+        transform: translateY(0);
+      }
+
+      /* Enhanced login section */
+      #login-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        border-radius: 24px;
+        padding: 3rem 2.5rem;
+        max-width: 420px;
+        width: 100%;
+        margin: 2rem auto;
+      }
+
+      /* Enhanced header section */
+      .header-section {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+      }
+
+      /* Responsive improvements */
+      @media (max-width: 767px) {
+        .container-centered {
+          padding: 1rem;
+        }
+        
+        .note-card {
+          padding: 1.5rem;
+        }
+        
+        .add-note-card {
+          padding: 1.5rem;
+        }
+        
+        #login-section {
+          padding: 2rem 1.5rem;
+          margin: 1rem;
+        }
+      }
+
+      /* Smooth animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .note-card {
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      /* Loading states */
+      .loading {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      /* Focus states for accessibility */
+      .note-action-btn:focus,
+      .add-note-btn:focus,
+      button:focus {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
       }
     </style>
   </head>
-  <body>
-    <div class="container-centered">
+  <body class="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+    <div class="flex flex-col items-center min-h-screen py-6 px-4">
       <!-- LOGIN / SIGNUP CARD -->
-      <div
-        id="login-section"
-        class="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl p-8 space-y-6 border border-slate-100"
-      >
-        <div class="text-center">
-          <div class="inline-block p-4 bg-blue-50 rounded-2xl mb-4">
-            <i class="fas fa-book-open text-blue-600 text-3xl"></i>
+      <div id="login-section" class="w-full max-w-md space-y-8 flex flex-col items-center mt-8">
+        <div class="flex flex-col items-center text-center">
+          <div class="inline-flex p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl mb-6 shadow-lg border border-blue-100">
+            <i class="fas fa-book-open text-blue-600 text-4xl"></i>
           </div>
-          <h1
-            class="text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
-          >
+          <h1 class="text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3 tracking-tight">
             Notes Pro
           </h1>
-          <p class="text-center text-slate-500">
-            Securely store and manage your thoughts.
+          <p class="text-slate-600 text-lg font-medium mb-2">
+            Professional Note Management
+          </p>
+          <p class="text-slate-500 text-sm leading-relaxed max-w-sm">
+            Organize your thoughts with elegance and efficiency. Create, search, and manage your notes seamlessly.
           </p>
         </div>
-        <div class="space-y-4">
+        <div class="w-full space-y-6">
           <div class="relative">
-            <div
-              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-            >
-              <i class="fas fa-user text-slate-400"></i>
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <i class="fas fa-user text-slate-400 text-lg"></i>
             </div>
             <input
               id="username"
               type="text"
-              placeholder="Username"
-              class="w-full pl-10 border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-xl px-4 py-3 transition shadow-sm"
+              placeholder="Enter your username"
+              class="w-full pl-12 pr-4 border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-xl py-3.5 transition-all duration-200 shadow-sm bg-white/80 backdrop-blur-sm text-lg font-medium placeholder-slate-400"
             />
           </div>
           <button
             id="login-btn"
-            class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl transition shadow-lg flex items-center justify-center space-x-2"
+            class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-3 text-lg"
           >
-            <span>Login / Sign Up</span>
-            <i class="fas fa-arrow-right"></i>
+            <span>Get Started</span>
+            <i class="fas fa-arrow-right text-lg"></i>
           </button>
         </div>
       </div>
 
       <!-- NOTES INTERFACE -->
-      <div id="notes-section" class="hidden w-full flex flex-col items-center space-y-8">
+      <div id="notes-section" class="hidden w-full flex flex-col items-center space-y-8 mt-6">
         <!-- Header -->
-        <div
-          class="flex flex-col md:flex-row justify-between items-center bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl p-5 w-full max-w-3xl mx-auto"
-        >
-          <div class="flex items-center space-x-3">
-            <div class="bg-blue-100 p-2 rounded-lg">
-              <i class="fas fa-book-open text-blue-600 text-xl"></i>
+        <div class="header-section flex flex-col lg:flex-row justify-between items-center w-full max-w-6xl mx-auto">
+          <div class="flex items-center space-x-4 mb-4 lg:mb-0">
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-xl border border-blue-100">
+              <i class="fas fa-book-open text-blue-600 text-2xl"></i>
             </div>
-            <h2
-              class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
-            >
-              Your Notes
-            </h2>
+            <div>
+              <h2 class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+                Your Notes
+              </h2>
+              <p class="text-slate-500 text-sm font-medium mt-1">Manage and organize your thoughts</p>
+            </div>
           </div>
-          <button
-            id="logout-btn"
-            class="mt-4 md:mt-0 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg transition flex items-center space-x-2"
-          >
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-          </button>
+          <div class="flex gap-3">
+            <button id="show-fav-btn" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 font-semibold px-5 py-2 rounded-xl shadow transition flex items-center gap-2">
+              <i class="fas fa-star"></i> Favorites
+            </button>
+            <button id="logout-btn" class="bg-white border-2 border-red-200 text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 px-6 py-3 rounded-xl transition-all duration-200 flex items-center space-x-2 font-semibold shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="w-full max-w-6xl mx-auto flex justify-center">
+          <div class="relative w-full lg:w-2/3">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4">
+              <i class="fas fa-search text-blue-500 text-lg"></i>
+            </span>
+            <input
+              id="note-search-bar"
+              type="text"
+              placeholder="Search your notes..."
+              autocomplete="off"
+              class="w-full border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-2xl pl-12 pr-6 py-4 text-lg shadow-sm transition-all duration-200 bg-white/90 backdrop-blur-sm font-medium placeholder-slate-400"
+            />
+          </div>
         </div>
 
         <!-- Tag Selector -->
-        <div id="tag-selector" class="tag-bar bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl p-5 w-full max-w-3xl mx-auto">
-          <h3 class="text-lg font-semibold mb-4 text-center">Filter by Tags</h3>
-          <!-- Tags will be injected here by JavaScript -->
+        <div id="tag-selector" class="tag-bar w-full max-w-6xl mx-auto flex flex-col items-center">
+          <h3 class="text-lg font-semibold text-slate-700 mb-3">Filter by Tags</h3>
+          <!-- Tags will be populated by JavaScript -->
         </div>
 
         <!-- Notes Grid -->
-        <div
-          id="notes-list"
-          class="notes-grid"
-        >
+        <div id="notes-list" class="notes-grid w-full max-w-6xl mx-auto">
           <!-- Notes will be injected here by JavaScript -->
+        </div>
+        <div class="flex justify-center mt-6">
+          <button id="show-all-btn" class="hidden bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold px-5 py-2 rounded-xl shadow transition flex items-center gap-2">
+            <i class="fas fa-list"></i> Show All Notes
+          </button>
         </div>
 
         <!-- Add Note Card -->
-        <div
-          class="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-slate-100 w-full max-w-2xl mx-auto"
-        >
-          <div class="flex items-center mb-4">
-            <div class="bg-blue-100 p-2 rounded-lg mr-3">
-              <i class="fas fa-plus text-blue-600"></i>
-            </div>
-            <h3 class="text-lg font-semibold">New Note</h3>
+        <div class="add-note-card w-full max-w-4xl mx-auto">
+          <div class="add-note-title">
+            <i class="fas fa-plus"></i>
+            <span>Create New Note</span>
           </div>
           <textarea
             id="new-note-content"
-            rows="4"
-            class="w-full border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-xl p-4 transition resize-none shadow-sm"
-            placeholder="Write your note here..."
+            rows="5"
+            class="add-note-textarea"
+            placeholder="Start writing your note here... Use clear and concise language to capture your thoughts effectively."
           ></textarea>
-          <div class="mt-6 flex justify-end">
-            <button
-              id="add-note-btn"
-              class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-3 rounded-xl transition shadow-lg flex items-center"
-            >
-              <i class="fas fa-plus mr-2"></i>
-              Add Note
+          <div class="flex justify-end">
+            <button id="add-note-btn" class="add-note-btn">
+              <i class="fas fa-plus"></i>
+              <span>Add Note</span>
             </button>
           </div>
         </div>

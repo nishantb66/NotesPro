@@ -9,6 +9,7 @@ from django.db.models import Q
 
 from .models import Note, Tag
 from .serializers import UserSerializer, NoteSerializer, TagSerializer
+from .tokens import CustomRefreshToken
 
 User = get_user_model()
 
@@ -20,7 +21,7 @@ def signup_view(request):
                         status=status.HTTP_400_BAD_REQUEST)
 
     user, created = User.objects.get_or_create(username=username)
-    refresh = RefreshToken.for_user(user)
+    refresh = CustomRefreshToken.for_user(user)
     return Response({
         'user':    UserSerializer(user).data,
         'access':  str(refresh.access_token),
@@ -40,7 +41,7 @@ def login_view(request):
         return Response({'detail':'Invalid username.'},
                         status=status.HTTP_401_UNAUTHORIZED)
 
-    refresh = RefreshToken.for_user(user)
+    refresh = CustomRefreshToken.for_user(user)
     return Response({
         'user':    UserSerializer(user).data,
         'access':  str(refresh.access_token),
@@ -83,6 +84,10 @@ class NoteListCreateView(ListCreateAPIView):
         if search:
             queryset = queryset.filter(content__icontains=search)
             
+        favorite = self.request.query_params.get('favorite', '').lower()
+        if favorite == 'true':
+            queryset = queryset.filter(is_favorite=True)
+        
         return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):

@@ -18,6 +18,7 @@ class Note(models.Model):
     tags       = models.ManyToManyField(Tag, related_name='notes', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_favorite = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Note {self.id} by {self.user.username}"
